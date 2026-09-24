@@ -1,0 +1,6 @@
+pandas
+wbgapi
+streamlit
+plotly
+matplotlib
+seaborn
