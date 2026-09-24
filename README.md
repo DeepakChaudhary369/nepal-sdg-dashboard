@@ -1,5 +1,8 @@
 # Nepal SDG Data Analytics Dashboard
 
+### 🚀 Live Dashboard
+👉 [Open the Nepal SDG Dashboard](https://nepal-sdg-dashboard-gtmfutrzyvwqmesdkcb6d9.streamlit.app/)
+
 Tracks Nepal's progress on Sustainable Development Goal indicators (2000–2024),
 benchmarks it against regional peers, and surfaces the gap to Nepal's own 2030
 national targets — as an interactive dashboard rather than a static notebook.
