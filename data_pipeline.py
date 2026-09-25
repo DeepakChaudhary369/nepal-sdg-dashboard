@@ -178,13 +178,27 @@ def build_nepal_dataset() -> pd.DataFrame:
             f"Fetching Nepal: {name} ({code})..."
         )
 
-        frame = fetch_indicator(
-            code,
-            "NPL",
-            name
-        )
+        try:
+
+            frame = fetch_indicator(
+                code,
+                "NPL",
+                name
+            )
+
+        except (RuntimeError, ValueError) as exc:
+
+            print(
+                f"  WARNING: skipping {name} ({code}) — {exc}"
+            )
+            continue
 
         frames.append(frame)
+
+    if not frames:
+        raise RuntimeError(
+            "All Nepal indicator fetches failed — no data to build."
+        )
 
     merged = reduce(
         lambda left, right: pd.merge(
@@ -206,7 +220,6 @@ def build_nepal_dataset() -> pd.DataFrame:
 
     return merged
 
-
 # ---------------------------------------------------------------------------
 # Regional dataset
 # ---------------------------------------------------------------------------
@@ -222,13 +235,27 @@ def build_regional_dataset() -> pd.DataFrame:
             f"{name} ({code})..."
         )
 
-        frame = fetch_indicator(
-            code,
-            list(COUNTRIES.keys()),
-            name
-        )
+        try:
+
+            frame = fetch_indicator(
+                code,
+                list(COUNTRIES.keys()),
+                name
+            )
+
+        except (RuntimeError, ValueError) as exc:
+
+            print(
+                f"  WARNING: skipping {name} ({code}) — {exc}"
+            )
+            continue
 
         frames.append(frame)
+
+    if not frames:
+        raise RuntimeError(
+            "All regional indicator fetches failed — no data to build."
+        )
 
     merged = reduce(
         lambda left, right: pd.merge(
@@ -254,7 +281,6 @@ def build_regional_dataset() -> pd.DataFrame:
     )
 
     return merged
-
 
 # ---------------------------------------------------------------------------
 # Validation
