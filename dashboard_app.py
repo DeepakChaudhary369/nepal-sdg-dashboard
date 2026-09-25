@@ -1,4 +1,3 @@
-
 """
 dashboard_app.py
 ----------------
@@ -134,6 +133,12 @@ DISPLAY_NAMES = {
     "Gini_index": "Gini index",
 }
 
+# Indicators formatted with a leading "$" in the KPI cards.
+CURRENCY_INDICATORS = {
+    "GDP_per_capita",
+    "Tourism_receipts_USD",
+}
+
 
 # ---------------------------------------------------------------------------
 # Sidebar
@@ -247,15 +252,24 @@ st.caption(
 
 st.subheader("Current indicator snapshot")
 
+st.caption(
+    f"Latest value within the selected year range "
+    f"({year_range[0]}–{year_range[1]})."
+)
+
 latest_rows = []
 
 for col in CORE_INDICATORS:
 
-    if col not in nepal.columns:
+    if col not in nepal_filtered.columns:
         continue
 
+    # FIX: was reading from `nepal` (ignores the year-range slider).
+    # Now reads from `nepal_filtered` so the KPI cards actually respond
+    # to the slider above, instead of always showing the dataset's
+    # true latest value regardless of the selected range.
     available = (
-        nepal[["Year", col]]
+        nepal_filtered[["Year", col]]
         .dropna()
         .sort_values("Year")
     )
@@ -274,6 +288,12 @@ for col in CORE_INDICATORS:
 
 kpi_columns = st.columns(4)
 
+if not latest_rows:
+
+    st.info(
+        "No data available for the selected year range."
+    )
+
 for index, item in enumerate(
     latest_rows[:4]
 ):
@@ -287,18 +307,9 @@ for index, item in enumerate(
 
     value = item["value"]
 
-    if item["indicator"] in [
-        "GDP_per_capita",
-        "Tourism_receipts_USD",
-    ]:
+    if item["indicator"] in CURRENCY_INDICATORS:
 
         formatted_value = f"${value:,.0f}"
-
-    elif item["indicator"] in [
-        "Life_expectancy"
-    ]:
-
-        formatted_value = f"{value:.1f}"
 
     else:
 
@@ -486,7 +497,7 @@ elif view_mode == "SDG target progress":
 
     row = gap_table[
         gap_table["Indicator"] == indicator
-    ]
+    ] if not gap_table.empty else gap_table
 
     if not row.empty:
 
@@ -523,6 +534,19 @@ elif view_mode == "SDG target progress":
                 "No single numeric 2030 target is defined "
                 "for this indicator in the project's target mapping."
             )
+
+    else:
+
+        # FIX: previously this branch showed nothing at all when the
+        # selected indicator has no entry in SDG_TARGETS (true for all
+        # 5 "Additional Nepal indicators" — Remittances, Tourism,
+        # Literacy, Maternal mortality, Gini). Now it says so explicitly
+        # instead of leaving the page looking broken.
+        st.info(
+            f"'{DISPLAY_NAMES.get(indicator, indicator)}' isn't "
+            "mapped to an SDG target in this project — target "
+            "tracking currently covers the 7 core indicators only."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -736,6 +760,7 @@ Some Nepal national SDG targets use definitions that differ
 from the corresponding World Bank indicators. Therefore,
 target progress should be interpreted as directional rather
 than as an exact measurement of official SDG performance.
+Target tracking currently covers the 7 core indicators only.
 
 ### Correlation
 
@@ -770,4 +795,3 @@ st.download_button(
     ),
     mime="text/csv",
 )
-
